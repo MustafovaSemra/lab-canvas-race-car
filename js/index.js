@@ -32,6 +32,8 @@ class Car {
   };
 }
 
+let weapons = [];
+
 let blueCar = new Car(
   racecar,
   canvas.width / 2 - racecar.width / 6,
@@ -46,6 +48,10 @@ window.onkeydown = function (e) {
   }
   if (e.key === "ArrowRight") {
     blueCar.x += 10;
+  }
+  if (e.key === " ") {
+    console.log("FIRE!!!!!", blueCar);
+    weapons.push(new Bullet(blueCar.x, blueCar.y, 20, 30, "yellow"));
   }
 };
 
@@ -62,7 +68,27 @@ class Obstacle {
     ctx.fillRect(this.x, this.y, this.w, this.h);
   };
   move = () => {
-    this.y += 1;
+    this.y += 3;
+    this.draw();
+  };
+}
+
+class Bullet {
+  constructor(x, y, w, h, color) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.color = color;
+  }
+
+  draw = () => {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+  };
+
+  move = () => {
+    this.y -= 2;
     this.draw();
   };
 }
@@ -86,6 +112,15 @@ function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
   blueCar.draw();
+  for (let bullet of weapons) {
+    bullet.move();
+    for (let obs of obstacles) {
+      if (detectCollision2(obs, bullet)) {
+        obstacles.splice(obstacles.indexOf(obs), 1);
+        weapons.splice(weapons.indexOf(bullet), 1);
+      }
+    }
+  }
   for (let obs of obstacles) {
     obs.move();
     detectCollision(obs, blueCar);
@@ -105,6 +140,19 @@ function detectCollision(rect1, rect2) {
     cancelAnimationFrame(animatedId);
   } else {
     counter += 100;
+    // console.log(counter);
+  }
+}
+
+function detectCollision2(rect1, rect2) {
+  if (
+    rect1.x < rect2.x + rect2.w &&
+    rect1.x + rect1.w > rect2.x &&
+    rect1.y < rect2.y + rect2.h &&
+    rect1.y + rect1.h > rect2.y
+  ) {
+    console.log("bullet collided!");
+    return true;
   }
 }
 
